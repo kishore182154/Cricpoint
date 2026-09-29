@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Join a team on CricPoint</title>
+<meta name="robots" content="noindex">
+<!--
+  CricPoint team invite page.
+  Host this file on GitHub Pages (same repo as the privacy policy is fine),
+  then put its URL in Services/TeamInviteLinks.cs → JoinLinkConfig.WebJoinPageUrl.
+
+  Why it exists: WhatsApp/SMS only make https links tappable. This page
+  takes ?team=... and hands it to the app through an Android intent URL.
+  If the app isn't installed, Chrome goes to the Play Store instead.
+-->
+<style>
+  :root { --green:#2E7D32; --deep:#1B5E20; --ink:#1A1A1A; --muted:#4B5563; --bg:#F1F8F2; }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; display:flex; align-items:center; justify-content:center;
+         background:var(--bg); color:var(--ink);
+         font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; padding:24px; }
+  main { width:100%; max-width:380px; background:#fff; border-radius:20px; padding:28px 24px;
+         border:1.5px solid #A5D6A7; text-align:center; }
+  .ball { font-size:44px; line-height:1; }
+  h1 { font-size:22px; margin:14px 0 6px; }
+  .team { font-size:26px; font-weight:800; color:var(--deep); margin:4px 0 18px; word-break:break-word; }
+  p { color:var(--muted); font-size:14px; line-height:1.5; margin:0 0 20px; }
+  a.btn { display:block; padding:15px; border-radius:12px; font-weight:700; font-size:16px;
+          text-decoration:none; margin-top:10px; }
+  a.primary { background:var(--green); color:#fff; }
+  a.primary:focus-visible { outline:3px solid var(--deep); outline-offset:2px; }
+  a.secondary { background:#E8F5E9; color:var(--green); }
+  .err { color:#B91C1C; }
+</style>
+</head>
+<body>
+<main>
+  <div class="ball" aria-hidden="true">🏏</div>
+  <h1>You're invited to join</h1>
+  <div class="team" id="team">your team</div>
+  <p id="msg">Tap below to open CricPoint and join the team. You'll be asked to log in or register first if you haven't.</p>
+  <a class="btn primary" id="open" href="#">Open CricPoint and join</a>
+  <a class="btn secondary" id="store" href="#">Get CricPoint from Play Store</a>
+</main>
+<script>
+  // Edit if your Play Store package id differs.
+  var PLAY_STORE = "https://play.google.com/store/apps/details?id=com.cricpoint.cricpoint";
+
+  var team = new URLSearchParams(location.search).get("team");
+  var openBtn = document.getElementById("open");
+  document.getElementById("store").href = PLAY_STORE;
+
+  if (!team) {
+    document.getElementById("team").textContent = "Invite link incomplete";
+    var m = document.getElementById("msg");
+    m.textContent = "This invite link is missing the team name. Ask your captain to share it again.";
+    m.className = "err";
+    openBtn.style.display = "none";
+  } else {
+    document.getElementById("team").textContent = team;
+    var appLink = "cricpoint://join?team=" + encodeURIComponent(team);
+    var isAndroid = /android/i.test(navigator.userAgent);
+    openBtn.href = isAndroid
+      ? "intent://join?team=" + encodeURIComponent(team) +
+        "#Intent;scheme=cricpoint;S.browser_fallback_url=" + encodeURIComponent(PLAY_STORE) + ";end"
+      : appLink;
+    // Try once automatically; some in-app browsers need the button tap instead.
+    if (isAndroid) setTimeout(function () { location.href = openBtn.href; }, 300);
+  }
+</script>
+</body>
+</html>
